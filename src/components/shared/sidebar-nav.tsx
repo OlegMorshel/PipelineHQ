@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { UserMenu } from "@/components/shared/user-menu";
 
 const navItems = [
   { href: "/", label: "Главная", icon: Home },
@@ -62,7 +63,7 @@ export function SidebarNav() {
       </nav>
 
       {/* Settings at bottom */}
-      <div className="border-t px-3 py-4">
+      <div className="border-t px-3 py-4 space-y-1">
         <Button
           variant="ghost"
           asChild
@@ -73,6 +74,11 @@ export function SidebarNav() {
             Стратегия
           </Link>
         </Button>
+      </div>
+
+      {/* User menu */}
+      <div className="border-t">
+        <UserMenu />
       </div>
     </div>
   );

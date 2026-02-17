@@ -460,6 +460,71 @@ QStash позволяет запускать HTTP-вызовы по распис
 
 ---
 
+## Тестирование
+
+### Vitest
+
+**Роль:** Фреймворк для юнит- и интеграционных тестов.
+
+Vitest — Vite-native тестовый фреймворк, совместимый с API Jest.
+Мгновенный запуск благодаря Vite-трансформации, поддержка TypeScript
+и JSX из коробки.
+
+**Почему Vitest, а не Jest:**
+- Нативная поддержка ESM, TypeScript, JSX — без дополнительной настройки
+- Использует те же алиасы (`@/`), что и основной проект
+- Быстрее Jest на порядок (Vite-трансформация вместо Babel)
+- Совместимый API — миграция с Jest тривиальна
+
+**Конфигурация:** `vitest.config.ts`
+- Environment: `jsdom` (для тестирования React-компонентов)
+- Globals: `true` (describe, it, expect без импорта)
+- Setup: `@testing-library/jest-dom/vitest` (DOM-матчеры)
+
+---
+
+### Testing Library (React)
+
+**Роль:** Тестирование React-компонентов с фокусом на пользовательское поведение.
+
+Testing Library тестирует компоненты так, как их видит пользователь —
+через текст, роли, лейблы, а не через внутренние детали реализации.
+
+**Используемые пакеты:**
+- `@testing-library/react` — рендеринг и запросы к DOM
+- `@testing-library/jest-dom` — DOM-матчеры (`toBeInTheDocument`, `toBeDisabled`)
+- `@testing-library/user-event` — симуляция пользовательских действий (click, type)
+
+**Что покрыто тестами (36 тестов):**
+
+| Модуль | Файл | Тесты | Что проверяется |
+|--------|-------|-------|-----------------|
+| Middleware | `middleware.test.ts` | 17 | Публичные роуты, редиректы неавторизованных, логика онбординга, передача cookies |
+| Login Page | `login-page.test.tsx` | 10 | Рендер UI, OAuth-вызовы (Threads/Google), loading-состояние, обработка ошибок |
+| UserMenu | `user-menu.test.tsx` | 9 | Skeleton-загрузка, данные пользователя, аватар, sign out, редирект |
+
+---
+
+### Husky + lint-staged
+
+**Роль:** Git hooks для автоматической проверки кода перед коммитом.
+
+Husky управляет Git-хуками, lint-staged запускает линтер только
+на изменённых файлах для быстрой обратной связи.
+
+**Pre-commit hook (`.husky/pre-commit`):**
+1. `lint-staged` — ESLint с автоисправлением на изменённых `.ts/.tsx` файлах
+2. `npm test` — запуск всех тестов через Vitest
+
+Если линтер или тесты падают — коммит блокируется.
+
+**Скрипты в `package.json`:**
+- `npm test` — однократный запуск тестов
+- `npm run test:watch` — watch-режим для разработки
+- `npm run test:coverage` — с отчётом о покрытии
+
+---
+
 ## Мониторинг
 
 ### Sentry
@@ -649,3 +714,7 @@ RESEND_API_KEY=
 | nuqs | ^2.x |
 | @sentry/nextjs | ^9.x |
 | posthog-js | ^1.x |
+| vitest | ^4.x |
+| @testing-library/react | ^16.x |
+| husky | ^9.x |
+| lint-staged | ^16.x |
