@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  /* Custom PipelineHQ colors */
+  --color-ai: hsl(var(--ai));
+  --color-ai-foreground: hsl(var(--ai-foreground));
+  --color-success: hsl(var(--success));
+  --color-streak: hsl(var(--streak));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/*
+ * PipelineHQ Design System
+ * Premium Gray Matte — inspired by Threads, Linear, Apple
+ */
+
+@layer base {
+  :root {
+    /* Premium Gray Matte Light Theme */
+    --background: 0 0% 96%; /* #F5F5F5 — матовый серый фон (НЕ белый!) */
+    --foreground: 0 0% 9%; /* #171717 — тёмно-угольный (НЕ чистый чёрный) */
+
+    --card: 0 0% 100%; /* #FFFFFF — белые карточки "парят" над серым */
+    --card-foreground: 0 0% 9%; /* #171717 */
+
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 0 0% 9%;
+
+    --primary: 0 0% 9%; /* #171717 — угольные кнопки */
+    --primary-foreground: 0 0% 98%; /* #FAFAFA */
+
+    --secondary: 0 0% 92%; /* #EBEBEB */
+    --secondary-foreground: 0 0% 9%;
+
+    --muted: 0 0% 92%; /* #EBEBEB */
+    --muted-foreground: 0 0% 45%; /* #737373 */
+
+    --accent: 0 0% 92%; /* #EBEBEB */
+    --accent-foreground: 0 0% 9%;
+
+    --destructive: 0 72% 51%; /* #EF4444 */
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 87%; /* #DEDEDE */
+    --input: 0 0% 87%; /* #DEDEDE */
+    --ring: 0 0% 9%; /* #171717 — focus ring угольный */
+
+    --radius: 0.75rem; /* 12px — скруглённые как в Threads */
+
+    /* Custom PipelineHQ tokens */
+    --ai: 262 83% 58%; /* #8B5CF6 — фиолетовый для AI */
+    --ai-foreground: 262 83% 97%; /* #F3EEFF — фон AI-бейджа */
+    --success: 152 69% 31%; /* #18A34A — выполнено */
+    --streak: 25 95% 53%; /* #F97316 — streak / fire */
+
+    /* Charts */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* Sidebar */
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 0 0% 96%;
+    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-border: 0 0% 87%;
+    --sidebar-ring: 0 0% 9%;
+  }
+
+  .dark {
+    /* Deep Matte Black Dark Theme */
+    --background: 0 0% 7%; /* #121212 — глубокий матовый чёрный */
+    --foreground: 0 0% 93%; /* #EDEDED — НЕ чистый белый */
+
+    --card: 0 0% 10%; /* #1A1A1A — карточки чуть светлее фона */
+    --card-foreground: 0 0% 93%;
+
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 93%;
+
+    --primary: 0 0% 93%; /* #EDEDED */
+    --primary-foreground: 0 0% 7%; /* #121212 */
+
+    --secondary: 0 0% 15%; /* #262626 */
+    --secondary-foreground: 0 0% 93%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 55%; /* #8C8C8C */
+
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 93%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 18%; /* #2E2E2E */
+    --input: 0 0% 18%;
+    --ring: 0 0% 83%;
+
+    /* Charts dark */
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+
+    /* Sidebar dark */
+    --sidebar: 0 0% 10%;
+    --sidebar-foreground: 0 0% 93%;
+    --sidebar-primary: 0 0% 93%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 0% 83%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
