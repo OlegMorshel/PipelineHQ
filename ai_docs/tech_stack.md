@@ -301,20 +301,42 @@ export const strategies = pgTable('strategies', {
 **Роль:** Аутентификация и управление сессиями.
 
 Better Auth — это TypeScript-first библиотека аутентификации, работающая
-с любой БД. Поддерживает OAuth-провайдеры, включая Meta (для Threads).
+с любой БД. Поддерживает OAuth-провайдеры, включая Meta (для Threads)
+и Google (для Gmail).
 
 **Почему Better Auth:**
 - Полная независимость от конкретного хостинга БД
-- Нативная поддержка Meta OAuth (Threads авторизуется через Meta)
+- Нативная поддержка Meta OAuth (Threads) и Google OAuth (Gmail)
 - Данные сессий хранятся в нашей PostgreSQL — полный контроль
 - TypeScript-first, отличная типизация
 - Поддержка JWT и database sessions
+- Поддержка привязки нескольких OAuth-провайдеров к одному аккаунту (account linking)
 
-**Флоу авторизации:**
+**OAuth-провайдеры:**
+
+| Провайдер | Назначение | Scopes |
+|-----------|-----------|--------|
+| **Meta (Threads)** | Основной вход + доступ к Threads API | `threads_basic`, `threads_content_publish`, `threads_manage_insights` |
+| **Google (Gmail)** | Альтернативный вход | `email`, `profile` |
+
+**Флоу авторизации через Threads:**
 1. Пользователь нажимает "Войти через Threads"
-2. Редирект на Meta OAuth (scope: threads_basic, threads_content_publish)
+2. Редирект на Meta OAuth
 3. Callback → Better Auth создаёт/обновляет пользователя в PostgreSQL
-4. Сессия сохраняется, access_token для Threads API — в БД
+4. Сессия сохраняется, `access_token` и `refresh_token` для Threads API — в БД
+5. Новый пользователь → Onboarding (шаг Threads уже пройден)
+
+**Флоу авторизации через Gmail:**
+1. Пользователь нажимает "Войти через Gmail"
+2. Редирект на Google OAuth
+3. Callback → Better Auth создаёт/обновляет пользователя в PostgreSQL
+4. Сессия сохраняется, email и имя из Google-профиля — в БД
+5. Новый пользователь → Onboarding (с предложением подключить Threads)
+
+**Account Linking:**
+- Пользователь, вошедший через Gmail, может позже привязать Threads
+- Threads-аккаунт связывается с существующим user через Better Auth account linking
+- После привязки — доступ к полному функционалу (анализ контента, аналитика)
 
 ---
 
@@ -513,9 +535,10 @@ Resend — сервис отправки email. React Email — компонен
 pipelinehq/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── (auth)/                 # Login, OAuth callback
+│   │   ├── (auth)/                 # Login, OAuth callbacks
 │   │   │   ├── login/page.tsx
-│   │   │   └── callback/route.ts
+│   │   │   ├── callback/threads/route.ts
+│   │   │   └── callback/google/route.ts
 │   │   ├── (onboarding)/           # Шаги онбординга
 │   │   │   └── onboarding/
 │   │   │       └── [[...step]]/page.tsx
@@ -578,9 +601,11 @@ pipelinehq/
 # Database
 DATABASE_URL=postgresql://...
 
-# Auth (Meta OAuth)
+# Auth (Meta OAuth + Google OAuth)
 META_CLIENT_ID=
 META_CLIENT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
 

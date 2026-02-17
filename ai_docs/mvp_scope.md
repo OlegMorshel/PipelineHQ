@@ -12,6 +12,13 @@
 
 ## Что входит в MVP
 
+### 0. Регистрация и Авторизация
+- Вход через Threads (Meta OAuth) — основной метод
+- Вход через Gmail (Google OAuth) — альтернативный метод
+- Привязка Threads к Gmail-аккаунту
+- Управление сессиями (Better Auth)
+- Защита роутов (middleware)
+
 ### 1. Smart Onboarding (Стратегия за 15 минут)
 - Подключение профиля Threads
 - Автоанализ контента → автозаполнение полей (ниша, оффер, чек, ЦА, CTA)
@@ -74,7 +81,8 @@
 
 | # | Модуль | Приоритет | Зависимости |
 |---|--------|-----------|-------------|
-| 1 | Onboarding | 🔴 Critical | — |
+| 0 | Auth (Регистрация / Авторизация) | 🔴 Critical | — |
+| 1 | Onboarding | 🔴 Critical | Auth |
 | 2 | Daily Growth Plan | 🔴 Critical | Onboarding |
 | 3 | Content Draft Engine | 🔴 Critical | Onboarding |
 | 4 | Basic Analytics | 🟡 High | Daily Growth Plan |
