@@ -15,6 +15,27 @@ const ENV = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET?.trim() ?? "",
 } as const;
 
+// ─── Диагностика: выводим статус env-переменных при старте сервера ───
+if (process.env.NODE_ENV === "development") {
+  const status = (val: string | undefined) =>
+    val ? `✅ set (${val.length} chars)` : "❌ MISSING";
+
+  console.log("\n┌─── Auth ENV diagnostics ───────────────────┐");
+  console.log(`│ BETTER_AUTH_URL      : ${status(ENV.BETTER_AUTH_URL)}`);
+  console.log(`│ BETTER_AUTH_SECRET   : ${status(ENV.BETTER_AUTH_SECRET)}`);
+  console.log(`│ META_CLIENT_ID       : ${status(ENV.META_CLIENT_ID)}`);
+  console.log(`│ META_CLIENT_SECRET   : ${status(ENV.META_CLIENT_SECRET)}`);
+  console.log(`│ GOOGLE_CLIENT_ID     : ${status(ENV.GOOGLE_CLIENT_ID)}`);
+  console.log(`│ GOOGLE_CLIENT_SECRET : ${status(ENV.GOOGLE_CLIENT_SECRET)}`);
+  console.log("└────────────────────────────────────────────┘\n");
+
+  if (!ENV.META_CLIENT_ID) {
+    console.warn(
+      "⚠️  META_CLIENT_ID is empty — Threads OAuth will fail with error 4476002"
+    );
+  }
+}
+
 export const auth = betterAuth({
   baseURL: ENV.BETTER_AUTH_URL,
   secret: ENV.BETTER_AUTH_SECRET,
@@ -41,7 +62,7 @@ export const auth = betterAuth({
       config: [
         {
           providerId: "threads",
-          authorizationUrl: "https://www.threads.net/oauth/authorize",
+          authorizationUrl: "https://threads.net/oauth/authorize",
           tokenUrl: "https://graph.threads.net/oauth/access_token",
           // Threads API требует scope через запятую, а better-auth
           // по умолчанию соединяет пробелом — переопределяем через authorizationUrlParams

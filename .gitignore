@@ -45,3 +45,5 @@ drizzle/meta/
 # IDE
 .idea/
 .vscode/
+
+certificates
