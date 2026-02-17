@@ -108,10 +108,7 @@ export const auth = betterAuth({
           // Получаем профиль из Threads API
           async getUserInfo(tokens) {
             const res = await fetch(
-              `https://graph.threads.net/v1.0/me?fields=id,username,name,threads_profile_picture_url,threads_biography`,
-              {
-                headers: { Authorization: `Bearer ${tokens.accessToken}` },
-              }
+              `https://graph.threads.net/v1.0/me?fields=id,username,name,threads_profile_picture_url,threads_biography&access_token=${tokens.accessToken}`
             );
 
             if (!res.ok) return null;
