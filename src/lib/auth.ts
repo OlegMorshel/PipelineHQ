@@ -4,9 +4,41 @@ import { genericOAuth } from "better-auth/plugins/generic-oauth";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 
+// Защита от trailing whitespace/newline в env-переменных (Vercel dashboard
+// иногда сохраняет \n при копировании из буфера обмена)
+const ENV = {
+  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL?.trim(),
+  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET?.trim(),
+  META_CLIENT_ID: process.env.META_CLIENT_ID?.trim() ?? "",
+  META_CLIENT_SECRET: process.env.META_CLIENT_SECRET?.trim() ?? "",
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID?.trim() ?? "",
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET?.trim() ?? "",
+} as const;
+
+// #region agent log
+const debugLog = (data: Record<string, unknown>) =>
+  fetch('http://127.0.0.1:7242/ingest/02c8bc81-5fd3-40c6-87e5-2a989463c923',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...data,timestamp:Date.now()})}).catch(()=>{});
+
+debugLog({
+  location: 'auth.ts:init',
+  message: 'Auth config loaded (trimmed)',
+  hypothesisId: 'H6',
+  data: {
+    BETTER_AUTH_URL: ENV.BETTER_AUTH_URL,
+    META_CLIENT_ID_length: ENV.META_CLIENT_ID.length,
+    META_CLIENT_ID_prefix: ENV.META_CLIENT_ID.substring(0, 6),
+    META_CLIENT_SECRET_length: ENV.META_CLIENT_SECRET.length,
+    redirectURI: `${ENV.BETTER_AUTH_URL}/api/auth/oauth2/callback/threads`,
+    rawBetterAuthUrlLength: process.env.BETTER_AUTH_URL?.length,
+    rawMetaClientIdLength: process.env.META_CLIENT_ID?.length,
+    hadTrailingWhitespace: process.env.BETTER_AUTH_URL !== process.env.BETTER_AUTH_URL?.trim(),
+  },
+});
+// #endregion
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL,
-  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: ENV.BETTER_AUTH_URL,
+  secret: ENV.BETTER_AUTH_SECRET,
 
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -30,20 +62,34 @@ export const auth = betterAuth({
       config: [
         {
           providerId: "threads",
-          authorizationUrl: "https://threads.net/oauth/authorize",
+          authorizationUrl: "https://www.threads.net/oauth/authorize",
           tokenUrl: "https://graph.threads.net/oauth/access_token",
+          // Threads API требует scope через запятую, а better-auth
+          // по умолчанию соединяет пробелом — переопределяем через authorizationUrlParams
           scopes: ["threads_basic", "threads_content_publish", "threads_manage_insights"],
-          clientId: process.env.META_CLIENT_ID as string,
-          clientSecret: process.env.META_CLIENT_SECRET as string,
-          redirectURI: `${process.env.BETTER_AUTH_URL}/api/auth/oauth2/callback/threads`,
+          clientId: ENV.META_CLIENT_ID,
+          clientSecret: ENV.META_CLIENT_SECRET,
+          redirectURI: `${ENV.BETTER_AUTH_URL}/api/auth/oauth2/callback/threads`,
+          authorizationUrlParams: {
+            scope: "threads_basic,threads_content_publish,threads_manage_insights",
+          },
 
           // Кастомный обмен кода на токен:
           // 1. Получаем short-lived токен
           // 2. Обмениваем на long-lived токен (60 дней)
           async getToken({ code, redirectURI }) {
+            // #region agent log
+            await debugLog({
+              location: 'auth.ts:getToken',
+              message: 'Token exchange started',
+              hypothesisId: 'H2-H5',
+              data: { redirectURI, codeLength: code?.length ?? 0, codePrefix: code?.substring(0, 10) },
+            });
+            // #endregion
+
             const params = new URLSearchParams({
-              client_id: process.env.META_CLIENT_ID!,
-              client_secret: process.env.META_CLIENT_SECRET!,
+              client_id: ENV.META_CLIENT_ID,
+              client_secret: ENV.META_CLIENT_SECRET,
               grant_type: "authorization_code",
               redirect_uri: redirectURI,
               code,
@@ -54,6 +100,16 @@ export const auth = betterAuth({
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: params.toString(),
             });
+
+            // #region agent log
+            const resText = await res.clone().text();
+            await debugLog({
+              location: 'auth.ts:getToken:response',
+              message: 'Token exchange response',
+              hypothesisId: 'H2-H5',
+              data: { status: res.status, ok: res.ok, body: resText.substring(0, 500) },
+            });
+            // #endregion
 
             if (!res.ok) {
               throw new Error(`Threads token exchange failed: ${res.status}`);
@@ -68,7 +124,7 @@ export const auth = betterAuth({
 
             try {
               const llRes = await fetch(
-                `https://graph.threads.net/access_token?grant_type=th_exchange_token&client_secret=${process.env.META_CLIENT_SECRET}&access_token=${data.access_token}`
+                `https://graph.threads.net/access_token?grant_type=th_exchange_token&client_secret=${ENV.META_CLIENT_SECRET}&access_token=${data.access_token}`
               );
               if (llRes.ok) {
                 const llData = await llRes.json();
@@ -127,8 +183,8 @@ export const auth = betterAuth({
 
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      clientId: ENV.GOOGLE_CLIENT_ID,
+      clientSecret: ENV.GOOGLE_CLIENT_SECRET,
     },
   },
 
